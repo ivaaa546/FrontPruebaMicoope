@@ -160,3 +160,35 @@
     background: #ef6c00;
     color: white;
 }
+
+/* Responsividad para Admin */
+@media (max-width: 768px) {
+    .admin-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+
+    .agencias-table-container {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .agencias-table th,
+    .agencias-table td {
+        padding: 0.75rem;
+        font-size: 0.85rem;
+    }
+
+    .acciones {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .btn-editar,
+    .btn-eliminar,
+    .btn-estado {
+        width: 100%;
+        text-align: center;
+    }
+}

@@ -72,3 +72,24 @@
   background: white;
   color: #1a5f2a;
 }
+
+/* Responsividad para Navbar */
+@media (max-width: 600px) {
+  .navbar {
+    padding: 1rem;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .navbar-links {
+    width: 100%;
+    justify-content: center;
+    gap: 1rem;
+    font-size: 0.85rem;
+  }
+
+  .user-name {
+    display: none;
+    /* Ocultar nombre en móvil para ahorrar espacio */
+  }
+}
