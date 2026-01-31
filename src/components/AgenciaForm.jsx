@@ -284,7 +284,7 @@ const AgenciaForm = ({ agencia, municipios, departamentos, onGuardar, onCancelar
                             ) : (
                                 <div className="nuevo-municipio-container">
                                     <h4 style={{ margin: '0 0 1rem 0', color: '#1a5f2a', fontSize: '0.9rem' }}>
-                                        {editandoMunicipioExistente ? ' Editando Municipio Existente' : '✨ Nuevo Municipio'}
+                                        {editandoMunicipioExistente ? ' Editando Municipio Existente' : ' Nuevo Municipio'}
                                     </h4>
                                     <div className="nuevo-municipio-fields">
                                         <input
