@@ -77,6 +77,12 @@ const Admin = () => {
 
     const handleGuardar = async (datos) => {
         try {
+            // Si se está editando un municipio existente
+            if (datos.editandoMunicipioExistente) {
+                const { id_municipio, ...municipioData } = datos.editandoMunicipioExistente;
+                await municipiosService.update(id_municipio, municipioData);
+            }
+
             if (agenciaEditar) {
                 await agenciasService.update(agenciaEditar.id_agencia, datos);
                 mostrarMensaje('success', 'Agencia actualizada correctamente');

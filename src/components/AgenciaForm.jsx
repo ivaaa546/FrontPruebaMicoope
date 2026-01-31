@@ -21,6 +21,9 @@ const AgenciaForm = ({ agencia, municipios, departamentos, onGuardar, onCancelar
     const [error, setError] = useState('');
     const [esNuevoMunicipio, setEsNuevoMunicipio] = useState(false);
     const [nuevoMunicipio, setNuevoMunicipio] = useState({ nombre: '', id_departamento: '', codigo: '' });
+    const [esNuevoDepartamento, setEsNuevoDepartamento] = useState(false);
+    const [nuevoDepartamento, setNuevoDepartamento] = useState({ nombre: '', codigo: '' });
+    const [editandoMunicipioExistente, setEditandoMunicipioExistente] = useState(false);
 
     useEffect(() => {
         if (agencia) {
@@ -79,6 +82,12 @@ const AgenciaForm = ({ agencia, municipios, departamentos, onGuardar, onCancelar
         if (error) setError('');
     };
 
+    const handleNuevoDepChange = (e) => {
+        const { name, value } = e.target;
+        setNuevoDepartamento(prev => ({ ...prev, [name]: value }));
+        if (error) setError('');
+    };
+
     const handleHorarioChange = (index, field, value) => {
         const newHorarios = [...horarios];
         newHorarios[index][field] = value;
@@ -96,7 +105,8 @@ const AgenciaForm = ({ agencia, municipios, departamentos, onGuardar, onCancelar
         if (!esNuevoMunicipio && !formData.id_municipio) return setError('Seleccione un municipio');
         if (esNuevoMunicipio) {
             if (!nuevoMunicipio.nombre.trim()) return setError('Ingrese el nombre del nuevo municipio');
-            if (!nuevoMunicipio.id_departamento) return setError('Seleccione el departamento para el nuevo municipio');
+            if (!esNuevoDepartamento && !nuevoMunicipio.id_departamento) return setError('Seleccione el departamento para el nuevo municipio');
+            if (esNuevoDepartamento && !nuevoDepartamento.nombre.trim()) return setError('Ingrese el nombre del nuevo departamento');
         }
 
         try {
@@ -123,8 +133,10 @@ const AgenciaForm = ({ agencia, municipios, departamentos, onGuardar, onCancelar
 
             await onGuardar({
                 ...formData,
-                id_municipio: esNuevoMunicipio ? null : parseInt(formData.id_municipio),
-                nuevoMunicipioData: esNuevoMunicipio ? nuevoMunicipio : null,
+                id_municipio: esNuevoMunicipio && !editandoMunicipioExistente ? null : parseInt(formData.id_municipio),
+                nuevoMunicipioData: esNuevoMunicipio && !editandoMunicipioExistente ? nuevoMunicipio : null,
+                nuevoDepartamentoData: esNuevoDepartamento ? nuevoDepartamento : null,
+                editandoMunicipioExistente: editandoMunicipioExistente ? { ...nuevoMunicipio, id_municipio: formData.id_municipio } : null,
                 horarios: finalHorarios
             });
         } catch (err) {
@@ -137,6 +149,8 @@ const AgenciaForm = ({ agencia, municipios, departamentos, onGuardar, onCancelar
                     setError('La SERIE ingresada ya existe en otra agencia');
                 } else if (msg.includes('codigo')) {
                     setError('El CÓDIGO ingresado ya existe en otra agencia');
+                } else if (msg.includes('departamentos_nombre') || msg.includes('departamento')) {
+                    setError('Este DEPARTAMENTO ya existe en el sistema.');
                 } else if (msg.includes('id_departamento') || msg.includes('municipios_nombre')) {
                     setError('Este MUNICIPIO ya existe en el departamento seleccionado.');
                 } else {
@@ -217,28 +231,61 @@ const AgenciaForm = ({ agencia, municipios, departamentos, onGuardar, onCancelar
                                 <button
                                     type="button"
                                     className="btn-toggle-nuevo"
-                                    onClick={() => setEsNuevoMunicipio(!esNuevoMunicipio)}
+                                    onClick={() => {
+                                        setEsNuevoMunicipio(!esNuevoMunicipio);
+                                        if (esNuevoMunicipio) {
+                                            setEsNuevoDepartamento(false);
+                                            setEditandoMunicipioExistente(false);
+                                            setNuevoMunicipio({ nombre: '', id_departamento: '', codigo: '' });
+                                        }
+                                    }}
                                 >
                                     {esNuevoMunicipio ? 'Seleccionar existente' : '+ Agregar nuevo municipio'}
                                 </button>
                             </div>
 
                             {!esNuevoMunicipio ? (
-                                <select
-                                    name="id_municipio"
-                                    value={formData.id_municipio}
-                                    onChange={handleChange}
-                                    required
-                                >
-                                    <option value="">Seleccionar municipio...</option>
-                                    {municipios.map(m => (
-                                        <option key={m.id_municipio} value={m.id_municipio}>
-                                            {m.nombre} ({m.departamentos?.nombre})
-                                        </option>
-                                    ))}
-                                </select>
+                                <div className="municipio-selector-edit">
+                                    <select
+                                        name="id_municipio"
+                                        value={formData.id_municipio}
+                                        onChange={handleChange}
+                                        required
+                                    >
+                                        <option value="">Seleccionar municipio...</option>
+                                        {municipios.map(m => (
+                                            <option key={m.id_municipio} value={m.id_municipio}>
+                                                {m.nombre} ({m.departamentos?.nombre})
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {formData.id_municipio && (
+                                        <button
+                                            type="button"
+                                            className="btn-edit-inline"
+                                            onClick={() => {
+                                                const mun = municipios.find(m => m.id_municipio === parseInt(formData.id_municipio));
+                                                if (mun) {
+                                                    setNuevoMunicipio({
+                                                        nombre: mun.nombre,
+                                                        id_departamento: mun.departamentos?.id_departamento || '',
+                                                        codigo: mun.codigo || ''
+                                                    });
+                                                    setEsNuevoMunicipio(true);
+                                                    setEditandoMunicipioExistente(true);
+                                                }
+                                            }}
+                                            title="Editar este municipio"
+                                        >
+                                            Editar
+                                        </button>
+                                    )}
+                                </div>
                             ) : (
                                 <div className="nuevo-municipio-container">
+                                    <h4 style={{ margin: '0 0 1rem 0', color: '#1a5f2a', fontSize: '0.9rem' }}>
+                                        {editandoMunicipioExistente ? ' Editando Municipio Existente' : '✨ Nuevo Municipio'}
+                                    </h4>
                                     <div className="nuevo-municipio-fields">
                                         <input
                                             type="text"
@@ -251,26 +298,58 @@ const AgenciaForm = ({ agencia, municipios, departamentos, onGuardar, onCancelar
                                         <input
                                             type="text"
                                             name="codigo"
-                                            placeholder="Código (Ej: 1601)"
+                                            placeholder="Código Mun. (Ej: 1601)"
                                             value={nuevoMunicipio.codigo}
                                             onChange={handleNuevoMunicipioChange}
                                             maxLength={10}
                                         />
                                     </div>
-                                    <select
-                                        name="id_departamento"
-                                        value={nuevoMunicipio.id_departamento}
-                                        onChange={handleNuevoMunicipioChange}
-                                        required
-                                        style={{ marginTop: '0.5rem' }}
-                                    >
-                                        <option value="">Seleccionar departamento...</option>
-                                        {departamentos.map(d => (
-                                            <option key={d.id_departamento} value={d.id_departamento}>
-                                                {d.nombre}
-                                            </option>
-                                        ))}
-                                    </select>
+
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem', marginBottom: '0.5rem' }}>
+                                        <label style={{ margin: 0, fontSize: '0.85rem' }}>Departamento *</label>
+                                        <button
+                                            type="button"
+                                            className="btn-toggle-nuevo"
+                                            onClick={() => setEsNuevoDepartamento(!esNuevoDepartamento)}
+                                        >
+                                            {esNuevoDepartamento ? 'Seleccionar existente' : '+ Agregar nuevo departamento'}
+                                        </button>
+                                    </div>
+
+                                    {!esNuevoDepartamento ? (
+                                        <select
+                                            name="id_departamento"
+                                            value={nuevoMunicipio.id_departamento}
+                                            onChange={handleNuevoMunicipioChange}
+                                            required
+                                        >
+                                            <option value="">Seleccionar departamento...</option>
+                                            {departamentos.map(d => (
+                                                <option key={d.id_departamento} value={d.id_departamento}>
+                                                    {d.nombre}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    ) : (
+                                        <div className="nuevo-municipio-fields" style={{ background: '#e1f5fe', borderStyle: 'solid' }}>
+                                            <input
+                                                type="text"
+                                                name="nombre"
+                                                placeholder="Nombre del departamento"
+                                                value={nuevoDepartamento.nombre}
+                                                onChange={handleNuevoDepChange}
+                                                required
+                                            />
+                                            <input
+                                                type="text"
+                                                name="codigo"
+                                                placeholder="Código Dep. (Ej: 16)"
+                                                value={nuevoDepartamento.codigo}
+                                                onChange={handleNuevoDepChange}
+                                                maxLength={10}
+                                            />
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>

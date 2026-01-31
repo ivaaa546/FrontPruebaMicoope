@@ -57,5 +57,17 @@ export const municipiosService = {
     create: async (municipio) => {
         const response = await api.post('/municipios', municipio);
         return response.data;
+    },
+
+    // Crear un nuevo departamento
+    createDepartamento: async (departamento) => {
+        const response = await api.post('/municipios/departamentos', departamento);
+        return response.data;
+    },
+
+    // Actualizar un municipio existente
+    update: async (id, municipio) => {
+        const response = await api.put(`/municipios/${id}`, municipio);
+        return response.data;
     }
 };
