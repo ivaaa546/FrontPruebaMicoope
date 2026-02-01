@@ -23,7 +23,7 @@ const Home = () => {
             if (cached && cacheTime) {
                 const now = Date.now();
                 if (now - parseInt(cacheTime) < CACHE_DURATION) {
-                    console.log('📦 Cargando agencias del caché');
+                    console.log(' Cargando agencias del caché');
                     return JSON.parse(cached);
                 }
             }
@@ -58,9 +58,9 @@ const Home = () => {
                 }
             }
 
-            console.log('🔄 Cargando agencias del servidor');
+            console.log(' Cargando agencias del servidor');
             // Si no hay caché o hay búsqueda, cargar del servidor
-            const data = await agenciasService.getForHome({ 
+            const data = await agenciasService.getForHome({
                 estado: true,
                 ...filtros
             });
@@ -119,11 +119,11 @@ const Home = () => {
     );
 
     if (loading) {
-        return <div className="loading">⏳ Cargando agencias...</div>;
+        return <div className="loading"> Cargando agencias...</div>;
     }
 
     if (error) {
-        return <div className="error">⚠️ {error}</div>;
+        return <div className="error"> {error}</div>;
     }
 
     return (
