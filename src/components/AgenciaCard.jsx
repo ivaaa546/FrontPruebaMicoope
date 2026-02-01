@@ -3,9 +3,11 @@ import './AgenciaCard.css';
 const AgenciaCard = ({ agencia }) => {
     const { nombre, direccion, telefono, municipios, horarios_agencia } = agencia;
 
-    // Formatear horarios
+    // Formatear horarios - si no existen, mostrar "Información no disponible"
     const formatearHorarios = () => {
-        if (!horarios_agencia || horarios_agencia.length === 0) return null;
+        if (!horarios_agencia || horarios_agencia.length === 0) {
+            return <p className="horarios-no-disponibles">Información no disponible</p>;
+        }
 
         const horariosOrdenados = [...horarios_agencia].sort(
             (a, b) => a.dias_semana.orden - b.dias_semana.orden

@@ -1,10 +1,21 @@
 import api from './api';
 
 export const agenciasService = {
-    // Obtener todas las agencias
+    // Obtener todas las agencias (versión completa con horarios)
     getAll: async (filtros = {}) => {
         const params = new URLSearchParams(filtros).toString();
         const response = await api.get(`/agencias?${params}`);
+        return response.data;
+    },
+
+    // Obtener agencias para Home (OPTIMIZADO - sin horarios detallados)
+    getForHome: async (filtros = {}) => {
+        const params = new URLSearchParams({
+            limit: 100,
+            offset: 0,
+            ...filtros
+        }).toString();
+        const response = await api.get(`/agencias/home?${params}`);
         return response.data;
     },
 
